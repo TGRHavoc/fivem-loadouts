@@ -7,7 +7,7 @@ end)
 
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
-	TriggerEvent("loadout:doLoadout", source, "Default")
+	TriggerEvent("loadout:doLoadout", source, "random")
 end)
 
 RegisterServerEvent("loadout:doLoadout")
@@ -46,22 +46,34 @@ AddEventHandler("loadout:doLoadout", function(player, loadoutName)
 	end
 end)
 
-for key,val in pairs(LOADOUTS) do
-	local l = LOADOUTS[key]
-	if l.command ~= nil then
-		print("registering command /" .. l.command )
-
-		TriggerEvent("es:addAdminCommand", l.command, (l.permission_level or 0), function(source, args, user)
-			print("executing command..." .. tostring(l.skins) .. " " .. tostring(l.weapons))
-
-			TriggerEvent("loadout:doLoadout", source, l.name)
-
-			TriggerClientEvent("mt:missiontext", source, "You have been given the loadout " .. l.name, 5000)
-
-		end, function(source, args, user)
-			-- Send a message telling them, they don't have permission to use the loadout
-			TriggerClientEvent("mt:missiontext", source, "You do not have permission for the " .. l.name .. " loadout", 5000)
-		end)
-
+TriggerEvent("es:addCommand", "loadout", function(source, args, user)
+	if #args > 1 then
+		local arg = args[2]
+		
+		if LOADOUTS[arg] then
+			-- Do loadout
+			local loadout = LOADOUTS[arg]
+			
+			print("checking permission levels")
+			if user.permission_level >= (loadout.permission_level or 0) then
+				print("executing command..." .. tostring(loadout.skins) .. " " .. tostring(loadout.weapons))
+				
+				TriggerEvent("loadout:doLoadout", source, arg)
+				TriggerClientEvent("mt:missiontext", source, "You have been given the loadout " .. loadout.name, 5000)
+				
+				return
+			end
+			
+			-- They don't have permission
+			print("no permission")
+			TriggerClientEvent("mt:missiontext", source, "You do not have permission for the " .. loadout.name .. " loadout", 5000)
+			
+		else
+			-- TODO: Other commands? e.g. /loadout help
+		end
+	else 
+		TriggerClientEvent('chatMessage', source, "SYSTEM", {255, 255, 255}, "Use /loadout <id> to pick a loadout.")
 	end
-end
+end)
+
+

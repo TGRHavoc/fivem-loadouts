@@ -1,21 +1,19 @@
 -- Edit the table below for more loadouts!
 LOADOUTS =  {
-	["Cop"] = {
+	["cop"] = {
 		name = "Cop",
-		command = "cop",
 		permission_level = 0,
 		weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN" },
 		skins = { "s_m_y_swat_01", "s_m_y_swat_01" }
 	},
-	["SCO19"] = {
+	["sco19"] = {
 		name = "SCO19",
-		command = "sco19",
 		permission_level = 2,
 		weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN", "WEAPON_ASSAULTSMG" },
 		skins = { "s_m_y_swat_01", "s_m_y_swat_01" }
 	},
-	["Default"] = {
-		name = "Default",
+	["random"] = {
+		name = "Random",
 		weapons = { "WEAPON_PETROLCAN" },
 		skins = {"a_m_y_skater_01",
 			"a_m_y_skater_02",
