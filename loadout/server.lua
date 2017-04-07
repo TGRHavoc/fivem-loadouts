@@ -58,14 +58,14 @@ TriggerEvent("es:addCommand", "loadout", function(source, args, user)
 				print("executing command..." .. tostring(loadout.skins) .. " " .. tostring(loadout.weapons))
 
 				TriggerEvent("loadout:doLoadout", source, arg)
-				TriggerClientEvent("mt:missiontext", source, "You have been given the loadout " .. loadout.name, 5000)
+				TriggerClientEvent("loadout:missiontext", source, "You have been given the loadout " .. loadout.name, 5000)
 
 				return
 			end
 
 			-- They don't have permission
 			print("no permission")
-			TriggerClientEvent("mt:missiontext", source, "You do not have permission for the " .. loadout.name .. " loadout", 5000)
+			TriggerClientEvent("loadout:missiontext", source, "You do not have permission for the " .. loadout.name .. " loadout", 5000)
 
 		else
 			-- TODO: Other commands? e.g. /loadout help
