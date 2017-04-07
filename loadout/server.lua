@@ -1,3 +1,9 @@
+local commands = {}
+
+for command, _ in pairs(LOADOUTS) do
+    table.insert(commands, command)
+end
+
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
 	TriggerEvent("loadout:doLoadout", source, "random")
@@ -63,6 +69,10 @@ TriggerEvent("es:addCommand", "loadout", function(source, args, user)
 
 		else
 			-- TODO: Other commands? e.g. /loadout help
+            if arg == "help" then
+                TriggerClientEvent('chatMessage', source, "SYSTEM", {255, 255, 255}, "There are " .. #commands .. " loadouts to choose from.")
+                TriggerClientEvent("chatMessage", source, "SYSTEM", {255, 255, 255}, table.concat(commands, ", "))
+            end
 		end
 	else
 		TriggerClientEvent('chatMessage', source, "SYSTEM", {255, 255, 255}, "Use /loadout <id> to pick a loadout.")
