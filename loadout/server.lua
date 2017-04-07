@@ -70,11 +70,20 @@ TriggerEvent("es:addCommand", "loadout", function(source, args, user)
 		else
 			-- TODO: Other commands? e.g. /loadout help
             if arg == "help" then
-                TriggerClientEvent('chatMessage', source, "SYSTEM", {255, 255, 255}, "There are " .. #commands .. " loadouts to choose from.")
-                TriggerClientEvent("chatMessage", source, "SYSTEM", {255, 255, 255}, table.concat(commands, ", "))
+                local availableCommands = {}
+                for command in pairs(commands) do
+                    local permission = LOADOUTS[commands[command]].permission_level
+                    if user.permission_level >= (permission or 0) then
+                        table.insert(availableCommands, commands[command])
+                    end
+                end
+
+                TriggerClientEvent('chatMessage', source, "Loadouts", {255, 255, 255}, "There are " .. #availableCommands .. " loadouts to choose from.")
+                TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, table.concat(availableCommands, ", "))
             end
 		end
 	else
-		TriggerClientEvent('chatMessage', source, "SYSTEM", {255, 255, 255}, "Use /loadout <id> to pick a loadout.")
+		TriggerClientEvent('chatMessage', source, "Loadouts", {255, 255, 255}, "Use /loadout <id> to pick a loadout.")
+        TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Use /loadout help to get a list of available loadouts.")
 	end
 end)
