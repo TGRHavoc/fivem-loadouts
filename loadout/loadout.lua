@@ -4,13 +4,13 @@ LOADOUTS =  {
         name = "Cop",
         permission_level = 0,
         weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN" },
-        skins = { "s_m_y_swat_01", "s_m_y_swat_01" }
+        skins = { "s_m_y_swat_01" }
     },
     ["sco19"] = {
         name = "SCO19",
         permission_level = 2,
         weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN", "WEAPON_ASSAULTSMG" },
-        skins = { "s_m_y_swat_01", "s_m_y_swat_01" }
+        skins = { "s_m_y_swat_01"}
     },
     ["test"] = {
         name = "Test Loadout",
