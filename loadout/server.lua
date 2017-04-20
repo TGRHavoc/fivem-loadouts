@@ -43,6 +43,17 @@ AddEventHandler("loadout:doLoadout", function(player, loadoutName)
             TriggerClientEvent("loadout:giveWeapon", player, weapons[wIdx], delay)
         end
     end
+
+    TriggerClientEvent("loadout:position", player, loadout.pos)
+
+	TriggerClientEvent("es:setJobDisplay", player, loadout.name)
+end)
+
+
+TriggerEvent("es:addCommand", "loadoutpos", function(source, args, user)
+    print("getting pos")
+    TriggerClientEvent("loadout:position", source)
+
 end)
 
 TriggerEvent("es:addCommand", "loadout", function(source, args, user)

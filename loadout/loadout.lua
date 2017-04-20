@@ -14,9 +14,14 @@ LOADOUTS =  {
     },
     ["test"] = {
         name = "Test Loadout",
-        permission_level = 10,
+        permission_level = 0,
         weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN", "WEAPON_ASSAULTSMG" },
-        skins = { "s_m_y_swat_01", "s_m_y_swat_01" }
+        skins = { "s_m_y_swat_01", "s_m_y_swat_01" },
+        pos = {
+            x = 2409.005,
+            y = 3079.255,
+            z = 48.15277
+        }
     },
     ["random"] = {
         name = "Random",

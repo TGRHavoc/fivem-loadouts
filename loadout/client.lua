@@ -44,3 +44,11 @@ AddEventHandler("loadout:missiontext", function(text, time)
     AddTextComponentString(text)
     DrawSubtitleTimed(time, 1)
 end)
+
+RegisterNetEvent("loadout:position")
+AddEventHandler("loadout:position", function(position)
+	if position == nil then
+		return
+	end
+    SetEntityCoords(GetPlayerPed(-1), position.x, position.y, position.z)
+end)
