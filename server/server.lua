@@ -5,11 +5,63 @@ for command, _ in pairs(LOADOUTS) do
     table.insert(commands, command)
 end
 
+if SETTINGS["enable_database"] then
+    print("STARTING CONNECTION")
+    -- Set up MySql connection
+    require "resources/essentialmode/lib/MYSQL"
+    print("Opening connection with " .. SETTINGS["database"].ip)
+    MySQL:open(SETTINGS["database"].ip, SETTINGS["database"].database, SETTINGS["database"].username, SETTINGS["database"].password)
+end
+
+
 -- When the server recieved the playerSpawned event, give the player a loadout
 -- If you don't want this, remove it
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
     TriggerEvent("loadout:doLoadout", source, "random")
+end)
+
+
+RegisterServerEvent("loadout:saveLoadout")
+AddEventHandler("loadout:saveLoadout", function(d)
+    if not SETTINGS["enable_database"] then
+        print("---------------------")
+        print("LOADOUTS: Cannot save. Feature is not enabled on the server!")
+        print("---------------------")
+        return
+    end
+
+    local fields = {"identifier", "loadout_name", "hair", "haircolour", "torso", "torsotexture", "torsoextra", "torsoextratexture", "pants", "pantscolour", "shoes", "shoescolour", "bodyaccessory"}
+    local newData = {}
+
+    for k,v in pairs(d) do
+        newData["@" .. k .. "_data"] = v
+    end
+
+    TriggerEvent("es:getPlayerFromId", source, function(user)
+        newData["@id"] = user.identifier
+
+        local getCurrentQuery = MySQL:executeQuery("SELECT * FROM loadouts WHERE identifier = '@id'", {["@id"] = user.identifier})
+        local result = MySQL:getResults(getCurrentQuery, fields, "identifier")
+
+        if result[1] == nil then
+            -- Insert
+            --[[MySQL:executeQuery("INSERT INTO loadouts (`identifier`, `loadout_name`, `hair`, `haircolour`, `torso`, `torsotexture`, `torsoextra`, `torsoextratexture`, `pants`, `pantscolour`, `shoes`, `shoescolour`, `bodyaccessory`) VALUES ('@id', '@loadout_name', @hair, @haircolour, @torso, @torsotexture, @torsoextra, @torsoextratexture, @pants, @pantscolour, @shoes, @shoescolour, @bodyaccessory)",
+                        {["@id"] = user.identifier, ["@loadout_name"] = d.loadout_name, ["@hair"] = d.hair, ["@haircolour"] = d.haircolour, ["@torso"] = d.torso, ["@torsotexture"] = d.torsotexture, ["@torsoextra"] = d.torsoextra, ["@torsoextratexture"] = d.torsoextratexture, ["@pants"] = d.pants, ["@pantscolour"] = d.pantscolour, ["@shoes"] = d.shoes, ["@shoescolour"] = d.shoescolour, ["@bodyaccessory"] = d.bodyaccessory})
+            ]]
+
+            MySQL:executeQuery("INSERT INTO loadouts (`identifier`, `loadout_name`, `hair`, `haircolour`, `torso`, `torsotexture`, `torsoextra`, `torsoextratexture`, `pants`, `pantscolour`, `shoes`, `shoescolour`, `bodyaccessory`) " ..
+                                "VALUES ('@id', '@loadout_name_data', @hair_data, @haircolour_data, @torso_data, @torsotexture_data, @torsoextra_data, @torsoextratexture_data, @pants_data, @pantscolour_data, @shoes_data, @shoescolour_data, @bodyaccessory_data)",
+                                newData)
+        else
+            -- update
+            MySQL:executeQuery("UPDATE loadouts SET `loadout_name`='@loadout_name_data', `hair`='@hair_data', `haircolour`='@haircolour_data', `torso`='@torso_data', `torsotexture`='@torsotexture_data', `torsoextra`='@torsoextra_data', `torsoextratexture`='@torsoextratexture_data', `pants`='@pants_data', `pantscolour`='@pantscolour_data', `shoes`='@shoes_data', `shoescolour`='@shoescolour_data', `bodyaccessory`='@bodyaccessory_data' WHERE identifier='@id'",
+                newData)
+        end
+
+        TriggerClientEvent("chatMessage", source, "Loadouts", "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+    end)
+
 end)
 
 --[[
@@ -21,7 +73,6 @@ E.g.
 TriggerEvent("loadout:doLoadout", -1, "random") - will give all players the "random" loadout
 TriggerEvent("loadout:doLoadout", 1, "cop") - will give the first player "cop" loadout
 ]]
-RegisterServerEvent("loadout:doLoadout")
 AddEventHandler("loadout:doLoadout", function(player , loadoutName)
     math.randomseed(os.time()) -- Apparently people have been having issues when random isn't seeded.
 
@@ -113,47 +164,6 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
         end)
     end
 
-end)
-
-TriggerEvent("es:addCommand", "loadout", function(source, args, user)
-    if #args > 1 then
-        local arg = args[2]
-
-        if LOADOUTS[arg] then
-            -- Do loadout
-            local loadout = LOADOUTS[arg]
-
-            print("checking permission levels")
-            if user.permission_level >= (loadout.permission_level or 0) then
-                print("executing command..." .. tostring(loadout.skins) .. " " .. tostring(loadout.weapons))
-
-                TriggerEvent("loadout:doLoadout", source, arg)
-                TriggerClientEvent("loadout:missiontext", source, "You have been given the loadout " .. loadout.name, 5000)
-
-                return
-            end
-
-            -- They don't have permission
-            print("no permission")
-            TriggerClientEvent("loadout:missiontext", source, "You do not have permission for the " .. loadout.name .. " loadout", 5000)
-
-        else
-            -- TODO: Other commands? e.g. /loadout help
-            if arg == "help" then
-                local availableCommands = {}
-                for command in pairs(commands) do
-                    local permission = LOADOUTS[commands[command]].permission_level
-                    if user.permission_level >= (permission or 0) then
-                        table.insert(availableCommands, commands[command])
-                    end
-                end
-
-                TriggerClientEvent('chatMessage', source, "Loadouts", {255, 255, 255}, "There are " .. #availableCommands .. " loadouts to choose from.")
-                TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, table.concat(availableCommands, ", "))
-            end
-        end
-    else
-        TriggerClientEvent('chatMessage', source, "Loadouts", {255, 255, 255}, "Use /loadout <id> to pick a loadout.")
-        TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Use /loadout help to get a list of available loadouts.")
-    end
+    -- Make sure the data on client is updated
+    TriggerClientEvent("loadout:playerLoadoutChanged", source, loadoutName)
 end)
