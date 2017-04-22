@@ -30,7 +30,6 @@ TriggerEvent("es:addCommand", "loadout", function(source, args, user)
             end
 
         elseif LOADOUTS[arg] then -- It's a loadout :D
-
             -- Do loadout
             local loadout = LOADOUTS[arg]
 
@@ -38,7 +37,7 @@ TriggerEvent("es:addCommand", "loadout", function(source, args, user)
             if user.permission_level >= (loadout.permission_level or 0) then
                 print("executing command..." .. tostring(loadout.skins) .. " " .. tostring(loadout.weapons))
 
-                TriggerEvent("loadout:doLoadout", source, arg)
+                TriggerEvent("loadout:doLoadout", source, arg, {})
                 TriggerClientEvent("loadout:missiontext", source, "You have been given the loadout " .. loadout.name, 5000)
                 return
             end

@@ -18,7 +18,7 @@ end
 -- If you don't want this, remove it
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
-    TriggerEvent("loadout:doLoadout", source, "random")
+    TriggerEvent("loadout:doLoadout", source, "random", {})
 
     --[[
     Uncomment the line below and remove the line above to load the player's
@@ -88,7 +88,7 @@ AddEventHandler("loadout:loadFromDatabase", function(playerId)
 
             TriggerEvent("loadout:doLoadout", playerId, r.loadout_name, r) -- Force our variance
 
-            TriggerClientEvent("loadout:loadVariants", playerId, r, 1000)
+            ---TriggerClientEvent("loadout:loadVariants", playerId, r, 1000)
         end
 
     end)
@@ -118,7 +118,8 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName, forcedVarian
         return -- We don't want to continue, loadout doesn't exist
     end
 
-    if not forcedVariance then
+    if next(forcedVariance) == nil then
+        print("setting forcedVariance to nil")
         forcedVariance = nil
     end
 
@@ -195,6 +196,7 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName, forcedVarian
             TriggerClientEvent("loadout:makeUnique", player, delay) -- Randomize the character
         end)
     elseif (forcedVariance ~= nil) then
+        print("Forcing variance")
         -- Force it!
         local delay = nil
         if skin ~= nil then
