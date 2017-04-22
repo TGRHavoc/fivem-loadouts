@@ -1,37 +1,68 @@
 local commands = {}
 
+-- Puts all available louadouts into a table, used later on
 for command, _ in pairs(LOADOUTS) do
     table.insert(commands, command)
 end
 
+-- When the server recieved the playerSpawned event, give the player a loadout
+-- If you don't want this, remove it
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
     TriggerEvent("loadout:doLoadout", source, "random")
 end)
 
+--[[
+The main loadout event, gives the player a loadout that is defined in the loadouts file
+player : int - The player's server ID (used to send events to them)
+loadoutName : string - The loadout to give (index for the loadout in the loadout file)
+
+E.g.
+TriggerEvent("loadout:doLoadout", -1, "random") - will give all players the "random" loadout
+TriggerEvent("loadout:doLoadout", 1, "cop") - will give the first player "cop" loadout
+]]
 RegisterServerEvent("loadout:doLoadout")
-AddEventHandler("loadout:doLoadout", function(player, loadoutName)
+AddEventHandler("loadout:doLoadout", function(player , loadoutName)
+    math.randomseed(os.time()) -- Apparently people have been having issues when random isn't seeded.
+
     print("changing " .. player)
     local loadout = LOADOUTS[loadoutName]
-    local skins, weapons
+    local skins, weapons, spawns
+
+    if not loadout then
+        print("-------------------------------------")
+        print("LOADOUT ERROR: Loadout with the index '" .. loadoutName .. "' doesn't exist")
+        print("-------------------------------------")
+        return -- We don't want to continue, loadout doesn't exist
+    end
 
     if not loadout.skins then
+        print("Loadouts: No skins found.. Leaving empty")
         skins = {}
     else
         skins = loadout.skins
     end
 
     if not loadout.weapons then
+        print("Loadouts: No weapons found.. Leaving empty")
         weapons = {}
     else
         weapons = loadout.weapons
     end
 
+    --  LOADOUT SKINS
+    -- Choose a random skin from the skins provided
     local sIdx = math.random(1, (#skins or 0) +1)
-    local skin = skins[sIdx] -- Choose a random skin
+    local skin = skins[sIdx]
+    -- If the skin is nil, the client will pick this up and fail.
+
     --print( "------- GOT SKIN: " .. skin .. " --------")
+    -- Change their skin
     TriggerClientEvent("loadout:changeSkin", player, skin)
 
+
+    -- LOADOUT WEAPONS
+    -- Give them their weapons (if they have any)
     if weapons then
         local delay = nil
         if skin ~= nil then
@@ -44,15 +75,25 @@ AddEventHandler("loadout:doLoadout", function(player, loadoutName)
         end
     end
 
-    TriggerClientEvent("loadout:position", player, loadout.pos)
+    -- LOADOUT SPAWNS
 
-	TriggerClientEvent("es:setJobDisplay", player, loadout.name)
-end)
+    if not loadout.spawnPos then
+        print("Loadouts: No spawn points found.. Leaving empty")
+        spawns = nil
+    else
+        spawns = loadout.spawnPos
+    end
 
+    -- If the loadout has a "spawn" then ppick random and teleport the player there.
+    if spawns ~= nil then
+        local spawnIndex = math.random(1, (#spawns or 0) + 1)
 
-TriggerEvent("es:addCommand", "loadoutpos", function(source, args, user)
-    print("getting pos")
-    TriggerClientEvent("loadout:position", source)
+        print("Random spawn = " .. spawnIndex)
+
+        local spawn = spawns[spawnIndex]
+
+        TriggerClientEvent("loadout:position", player, spawn)
+    end
 
 end)
 
