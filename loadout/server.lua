@@ -96,7 +96,7 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
 
     -- UNIQUE CHARACTERS
     local makeUnique = false
-    if loadout.unique then
+    if loadout.randomize then
         makeUnique = true
     end
 
@@ -106,7 +106,7 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
             if skin ~= nil then
                 delay = 1000 -- 1 sec
             end
-            
+
             TriggerClientEvent("loadout:setRandomSeed", player, user.identifier) -- Make sure the seed has been set
 
             TriggerClientEvent("loadout:makeUnique", player, delay) -- Randomize the character

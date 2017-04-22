@@ -30,12 +30,12 @@ LOADOUTS =  {
                 z = 48.15277
             }
         },
-        unique = true -- Randomise the character based on the player's identifier
+        randomize = true -- Randomise the character based on the player's identifier
     },
     ["test2"] = {
         name = "Test Loadout 2",
         skins = { "player_two" }, -- trevor
-        unique = true -- Randomise the character based on the player's identifier
+        randomize = true -- Randomise the character based on the player's identifier
     },
     ["random"] = {
         name = "Random",
