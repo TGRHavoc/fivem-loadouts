@@ -33,7 +33,7 @@ local options = {
         t = 'texture',
         name = "haircolour",
         max = function()
-            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 2, GetPedDrawableVariation(GetPlayerPed(-1), 2)) - 1
+            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 2, GetPedDrawableVariation(GetPlayerPed(-1), 2))
         end
     },
     {
@@ -56,7 +56,7 @@ local options = {
         name = "torsotexture",
         t = 'texture',
         max = function()
-            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 3, GetPedDrawableVariation(GetPlayerPed(-1), 3)) - 1
+            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 3, GetPedDrawableVariation(GetPlayerPed(-1), 3))
         end
     },
     {
@@ -72,7 +72,7 @@ local options = {
         name = "torsoextratexture",
         t = 'texture',
         max = function()
-            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 11, GetPedDrawableVariation(GetPlayerPed(-1), 11)) - 1
+            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 11, GetPedDrawableVariation(GetPlayerPed(-1), 11))
         end
     },
     {
@@ -88,7 +88,7 @@ local options = {
         name = "pantscolour",
         t = 'texture',
         max = function()
-            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 4, GetPedDrawableVariation(GetPlayerPed(-1), 4)) - 1
+            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 4, GetPedDrawableVariation(GetPlayerPed(-1), 4))
         end
     },
     {
@@ -104,7 +104,7 @@ local options = {
         name = "shoescolour",
         t = 'texture',
         max = function()
-            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 6, GetPedDrawableVariation(GetPlayerPed(-1), 6)) - 1
+            return GetNumberOfPedTextureVariations(GetPlayerPed(-1), 6, GetPedDrawableVariation(GetPlayerPed(-1), 6))
         end
     },
     {
