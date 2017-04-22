@@ -60,13 +60,12 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
     -- Change their skin
     TriggerClientEvent("loadout:changeSkin", player, skin)
 
-
     -- LOADOUT WEAPONS
     -- Give them their weapons (if they have any)
     if weapons then
         local delay = nil
         if skin ~= nil then
-            delay = 2000
+            delay = 1000 -- 1 second
         end
 
         for wIdx = 1, #weapons do
@@ -93,6 +92,25 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
         local spawn = spawns[spawnIndex]
 
         TriggerClientEvent("loadout:position", player, spawn)
+    end
+
+    -- UNIQUE CHARACTERS
+    local makeUnique = false
+    if loadout.unique then
+        makeUnique = true
+    end
+
+    if makeUnique then
+        TriggerEvent("es:getPlayerFromId", player, function(user)
+            local delay = nil
+            if skin ~= nil then
+                delay = 1000 -- 1 sec
+            end
+            
+            TriggerClientEvent("loadout:setRandomSeed", player, user.identifier) -- Make sure the seed has been set
+
+            TriggerClientEvent("loadout:makeUnique", player, delay) -- Randomize the character
+        end)
     end
 
 end)

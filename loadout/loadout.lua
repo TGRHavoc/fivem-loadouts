@@ -1,3 +1,8 @@
+-- TODO: Add
+SETTINGS = {
+
+}
+
 -- Edit the table below for more loadouts!
 LOADOUTS =  {
     ["cop"] = { -- This is the command that is used to get the loadout (i.e. /loadout cop)
@@ -24,7 +29,13 @@ LOADOUTS =  {
                 y = 3079.255,
                 z = 48.15277
             }
-        }
+        },
+        unique = true -- Randomise the character based on the player's identifier
+    },
+    ["test2"] = {
+        name = "Test Loadout 2",
+        skins = { "player_two" }, -- trevor
+        unique = true -- Randomise the character based on the player's identifier
     },
     ["random"] = {
         name = "Random",
