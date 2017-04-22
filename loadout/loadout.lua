@@ -1,22 +1,41 @@
+-- TODO: Add
+SETTINGS = {
+
+}
+
 -- Edit the table below for more loadouts!
 LOADOUTS =  {
-    ["cop"] = {
-        name = "Cop",
-        permission_level = 0,
+    ["cop"] = { -- This is the command that is used to get the loadout (i.e. /loadout cop)
+        name = "Cop", -- The name of the loadout (shown to the player)
+        permission_level = 2, -- The player must hhave this permission to get the loadout
+        -- Below is a list of weapons the player gets with the loadout (see https://www.se7ensins.com/forums/threads/weapon-and-explosion-hashes-list.1045035/)
         weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN" },
+        --Below is a list of skins (randomly picked) the player can become with this loadout (see http://www.nextgenupdate.com/forums/gta-5-mods/725735-full-npcs-ped-models-characters-list-case-you-need-p-3.html)
         skins = { "s_m_y_swat_01" }
-    },
-    ["sco19"] = {
-        name = "SCO19",
-        permission_level = 2,
-        weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN", "WEAPON_ASSAULTSMG" },
-        skins = { "s_m_y_swat_01"}
     },
     ["test"] = {
         name = "Test Loadout",
-        permission_level = 10,
+        permission_level = 0,
         weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN", "WEAPON_ASSAULTSMG" },
-        skins = { "s_m_y_swat_01" }
+        skins = { "s_m_y_swat_01"},
+        spawnPos = { -- A list of potential spawn points for this loadout (randomly picked)
+            {
+                x = 2409.005,
+                y = 3079.255,
+                z = 48.15277
+            },
+            {
+                x = 2409.005,
+                y = 3079.255,
+                z = 48.15277
+            }
+        },
+        randomize = true -- Randomise the character based on the player's identifier
+    },
+    ["test2"] = {
+        name = "Test Loadout 2",
+        skins = { "player_two" }, -- trevor
+        randomize = true -- Randomise the character based on the player's identifier
     },
     ["random"] = {
         name = "Random",
