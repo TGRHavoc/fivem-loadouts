@@ -141,6 +141,25 @@ local options = {
     }
 }
 
+local userData = {
+    ["loadout_name"] = nil,
+    ["hair"] = -1,
+    ["haircolour"] = -1,
+    ["torso"] = -1,
+    ["torsotexture"] = -1,
+    ["torsoextra"] = -1,
+    ["torsoextratexture"] = -1,
+    ["pants"] = -1,
+    ["pantscolour"] = -1,
+    ["shoes"] = -1,
+    ["shoescolour"] = -1,
+    ["bodyaccessory"] = -1
+}
+
+RegisterNetEvent("loadout:playerLoadoutChanged")
+AddEventHandler("loadout:playerLoadoutChanged", function(newLoadout)
+    userData["loadout_name"] = newLoadout
+end)
 
 RegisterNetEvent("loadout:changeSkin")
 AddEventHandler("loadout:changeSkin", function(skinName)
@@ -165,8 +184,6 @@ end)
 
 AddEventHandler("playerSpawned", function(spawn)
     TriggerServerEvent("loadout:playerSpawned", spawn)
-
---    initValids()
 end)
 
 RegisterNetEvent("loadout:giveWeapon")
@@ -225,6 +242,9 @@ AddEventHandler("loadout:makeUnique", function(delay)
         Wait(delay)
 
         for k,v in pairs(options) do
+            local changed = false
+            local changedTo = nil
+
             if (options[k].t == "drawable") then
                 local id = options[k].id
                 local max = options[k].max()
@@ -238,16 +258,22 @@ AddEventHandler("loadout:makeUnique", function(delay)
                         if IsPedComponentVariationValid(GetPlayerPed(-1), id, validTorso[randomNumber], 2) then
                             --Citizen.Trace("The random value is valid :D")
                             SetPedComponentVariation(GetPlayerPed(-1), id,  validTorso[randomNumber], 1, 2)
+
+                            changedTo = validTorso[randomNumber]
                         end
                     elseif (options[k].name == "bodyaccessory") then
                         if IsPedComponentVariationValid(GetPlayerPed(-1), id, validUnder[randomNumber], 2) then
                             --Citizen.Trace("The random value is valid :D")
                             SetPedComponentVariation(GetPlayerPed(-1), id, validUnder[randomNumber], 1, 2)
+
+                            changedTo = validTorso[randomNumber]
                         end
                     else
                         if IsPedComponentVariationValid(GetPlayerPed(-1), id, randomNumber, 2) then
                             --Citizen.Trace("The random value is valid :D")
                             SetPedComponentVariation(GetPlayerPed(-1), id, randomNumber, 1, 2)
+
+                            changedTo = randomNumber
                         end
                     end
                 end
@@ -262,11 +288,69 @@ AddEventHandler("loadout:makeUnique", function(delay)
                     Citizen.Trace("Randomized " .. options[k].name .. " (" .. randomNumber .. "/" .. max ..")")
 
                     SetPedComponentVariation(GetPlayerPed(-1), id, GetPedDrawableVariation(GetPlayerPed(-1), id), randomNumber, 2)
+                    changedTo = randomNumber
                 end
 
             end -- end if options[k].t
 
+            if changedTo ~= nil then
+                userData[options[k].name] = changedTo
+            end
         end -- end for k,v
+    end) -- End citizen.CreateThread
+end)
+
+RegisterNetEvent("loadout:saveLoadout")
+AddEventHandler("loadout:saveLoadout", function()
+    TriggerServerEvent("loadout:saveLoadout", userData)
+end)
+
+RegisterNetEvent("loadout:loadVariants")
+AddEventHandler("loadout:loadVariants", function(data, delay)
+    userData = data
+    if delay == nil then
+        delay = 0
+    end
+
+    Citizen.CreateThread(function()
+        Wait(delay)
+        for name, value in pairs(data) do
+            for k, v in pairs(options) do
+                if options[k].name == name then
+                    Citizen.Trace(options[k].name .. " == " .. name)
+					if (options[k].t == "drawable") then
+						local id = options[k].id
+						if (value > 0) then
+							local randomNumber = value
+							Citizen.Trace(options[k].name .. " (" .. randomNumber ..")")
+
+							if (options[k].name == "torso") then
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, validTorso[randomNumber], 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id,  validTorso[randomNumber], 1, 2)
+								end
+							elseif (options[k].name == "bodyaccessory") then
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, validUnder[randomNumber], 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id, validUnder[randomNumber], 1, 2)
+								end
+							else
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, randomNumber, 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id, randomNumber, 1, 2)
+								end
+							end
+						end
+					else -- Textures
+						local id = options[k].id
+						if (value > 0) then
+							local randomNumber = data[name]
+							Citizen.Trace(options[k].name .. " (" .. randomNumber ..")")
+							SetPedComponentVariation(GetPlayerPed(-1), id, GetPedDrawableVariation(GetPlayerPed(-1), id), randomNumber, 2)
+						end
+
+					end -- end if options[k].t
+
+				end -- end if name == options[k].name
+            end -- end for k,v
+        end -- end for name, value
     end) -- End citizen.CreateThread
 
 end)
