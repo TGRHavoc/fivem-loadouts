@@ -26,6 +26,7 @@ TriggerEvent("es:addCommand", "loadout", function(source, args, user)
                 TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Sorry, the save feature is turned off on this server.")
             else
                 -- TODO: Load loadout
+                TriggerEvent("loadout:loadFromDatabase", source)
             end
 
         elseif LOADOUTS[arg] then -- It's a loadout :D

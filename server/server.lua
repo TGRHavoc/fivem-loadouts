@@ -19,6 +19,12 @@ end
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
     TriggerEvent("loadout:doLoadout", source, "random")
+
+    --[[
+    Uncomment the line below and remove the line above to load the player's
+    loadout from the database when they spawn
+    ]]
+    -- TriggerEvent("loadout:loadFromDatabase", source)
 end)
 
 
@@ -46,10 +52,6 @@ AddEventHandler("loadout:saveLoadout", function(d)
 
         if result[1] == nil then
             -- Insert
-            --[[MySQL:executeQuery("INSERT INTO loadouts (`identifier`, `loadout_name`, `hair`, `haircolour`, `torso`, `torsotexture`, `torsoextra`, `torsoextratexture`, `pants`, `pantscolour`, `shoes`, `shoescolour`, `bodyaccessory`) VALUES ('@id', '@loadout_name', @hair, @haircolour, @torso, @torsotexture, @torsoextra, @torsoextratexture, @pants, @pantscolour, @shoes, @shoescolour, @bodyaccessory)",
-                        {["@id"] = user.identifier, ["@loadout_name"] = d.loadout_name, ["@hair"] = d.hair, ["@haircolour"] = d.haircolour, ["@torso"] = d.torso, ["@torsotexture"] = d.torsotexture, ["@torsoextra"] = d.torsoextra, ["@torsoextratexture"] = d.torsoextratexture, ["@pants"] = d.pants, ["@pantscolour"] = d.pantscolour, ["@shoes"] = d.shoes, ["@shoescolour"] = d.shoescolour, ["@bodyaccessory"] = d.bodyaccessory})
-            ]]
-
             MySQL:executeQuery("INSERT INTO loadouts (`identifier`, `loadout_name`, `hair`, `haircolour`, `torso`, `torsotexture`, `torsoextra`, `torsoextratexture`, `pants`, `pantscolour`, `shoes`, `shoescolour`, `bodyaccessory`) " ..
                                 "VALUES ('@id', '@loadout_name_data', @hair_data, @haircolour_data, @torso_data, @torsotexture_data, @torsoextra_data, @torsoextratexture_data, @pants_data, @pantscolour_data, @shoes_data, @shoescolour_data, @bodyaccessory_data)",
                                 newData)
@@ -59,7 +61,36 @@ AddEventHandler("loadout:saveLoadout", function(d)
                 newData)
         end
 
-        TriggerClientEvent("chatMessage", source, "Loadouts", "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+        TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+    end)
+end)
+
+AddEventHandler("loadout:loadFromDatabase", function(playerId)
+    if not SETTINGS["enable_database"] then
+        print("---------------------")
+        print("LOADOUTS: Cannot load. Feature is not enabled on the server!")
+        print("---------------------")
+        return
+    end
+
+    local fields = {"identifier", "loadout_name", "hair", "haircolour", "torso", "torsotexture", "torsoextra", "torsoextratexture", "pants", "pantscolour", "shoes", "shoescolour", "bodyaccessory"}
+
+    TriggerEvent("es:getPlayerFromId", playerId, function(user)
+
+        local getCurrentQuery = MySQL:executeQuery("SELECT * FROM loadouts WHERE identifier = '@id'", {["@id"] = user.identifier})
+        local result = MySQL:getResults(getCurrentQuery, fields, "identifier")
+
+        if result[1] == nil then
+            TriggerClientEvent("chatMessage", playerId, "Loadouts", {255, 255, 255}, "Sorry, you don't have any loadouts saved.")
+        else
+            --Load them up!
+            local r = result[1]
+
+            TriggerEvent("loadout:doLoadout", playerId, r.loadout_name, r) -- Force our variance
+
+            TriggerClientEvent("loadout:loadVariants", playerId, r, 1000)
+        end
+
     end)
 
 end)
@@ -73,7 +104,7 @@ E.g.
 TriggerEvent("loadout:doLoadout", -1, "random") - will give all players the "random" loadout
 TriggerEvent("loadout:doLoadout", 1, "cop") - will give the first player "cop" loadout
 ]]
-AddEventHandler("loadout:doLoadout", function(player , loadoutName)
+AddEventHandler("loadout:doLoadout", function(player , loadoutName, forcedVariance)
     math.randomseed(os.time()) -- Apparently people have been having issues when random isn't seeded.
 
     print("changing " .. player)
@@ -85,6 +116,10 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
         print("LOADOUT ERROR: Loadout with the index '" .. loadoutName .. "' doesn't exist")
         print("-------------------------------------")
         return -- We don't want to continue, loadout doesn't exist
+    end
+
+    if not forcedVariance then
+        forcedVariance = nil
     end
 
     if not loadout.skins then
@@ -137,11 +172,8 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
     -- If the loadout has a "spawn" then ppick random and teleport the player there.
     if spawns ~= nil then
         local spawnIndex = math.random(1, (#spawns or 0) + 1)
-
         print("Random spawn = " .. spawnIndex)
-
         local spawn = spawns[spawnIndex]
-
         TriggerClientEvent("loadout:position", player, spawn)
     end
 
@@ -151,7 +183,7 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
         makeUnique = true
     end
 
-    if makeUnique then
+    if (makeUnique and forcedVariance == nil) then
         TriggerEvent("es:getPlayerFromId", player, function(user)
             local delay = nil
             if skin ~= nil then
@@ -162,6 +194,13 @@ AddEventHandler("loadout:doLoadout", function(player , loadoutName)
 
             TriggerClientEvent("loadout:makeUnique", player, delay) -- Randomize the character
         end)
+    elseif (forcedVariance ~= nil) then
+        -- Force it!
+        local delay = nil
+        if skin ~= nil then
+            delay = 1000 -- 1 sec
+        end
+        TriggerClientEvent("loadout:loadVariants", player, forcedVariance, delay)
     end
 
     -- Make sure the data on client is updated

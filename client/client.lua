@@ -304,3 +304,53 @@ RegisterNetEvent("loadout:saveLoadout")
 AddEventHandler("loadout:saveLoadout", function()
     TriggerServerEvent("loadout:saveLoadout", userData)
 end)
+
+RegisterNetEvent("loadout:loadVariants")
+AddEventHandler("loadout:loadVariants", function(data, delay)
+    userData = data
+    if delay == nil then
+        delay = 0
+    end
+
+    Citizen.CreateThread(function()
+        Wait(delay)
+        for name, value in pairs(data) do
+            for k, v in pairs(options) do
+                if options[k].name == name then
+                    Citizen.Trace(options[k].name .. " == " .. name)
+					if (options[k].t == "drawable") then
+						local id = options[k].id
+						if (value > 0) then
+							local randomNumber = value
+							Citizen.Trace(options[k].name .. " (" .. randomNumber ..")")
+
+							if (options[k].name == "torso") then
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, validTorso[randomNumber], 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id,  validTorso[randomNumber], 1, 2)
+								end
+							elseif (options[k].name == "bodyaccessory") then
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, validUnder[randomNumber], 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id, validUnder[randomNumber], 1, 2)
+								end
+							else
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, randomNumber, 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id, randomNumber, 1, 2)
+								end
+							end
+						end
+					else -- Textures
+						local id = options[k].id
+						if (value > 0) then
+							local randomNumber = data[name]
+							Citizen.Trace(options[k].name .. " (" .. randomNumber ..")")
+							SetPedComponentVariation(GetPlayerPed(-1), id, GetPedDrawableVariation(GetPlayerPed(-1), id), randomNumber, 2)
+						end
+
+					end -- end if options[k].t
+
+				end -- end if name == options[k].name
+            end -- end for k,v
+        end -- end for name, value
+    end) -- End citizen.CreateThread
+
+end)
