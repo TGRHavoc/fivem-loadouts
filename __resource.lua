@@ -1,8 +1,12 @@
 dependency "essentialmode"
 
 server_scripts {
-    'loadout/loadout.lua',
-    'loadout/server.lua'
+    'server/settings.lua',
+    'server/server.lua',
+    'server/commands.lua'
 }
 
-client_script 'loadout/client.lua'
+client_scripts {
+    'client/client.lua',
+    'client/language.lua'
+}

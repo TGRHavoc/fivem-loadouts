@@ -2,23 +2,6 @@ local validTorso = {}
 local validUnder = {}
 local seedSet = false
 
-function initValids()
-    local am = 0
-    for i = 0,GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 3) do
-        if IsPedComponentVariationValid(GetPlayerPed(-1), 3, i, 2) then
-            am = am + 1
-            validTorso[am] = i
-        end
-    end
-    am = 0
-    for i =0, GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 7) do
-        if IsPedComponentVariationValid(GetPlayerPed(-1), 7, i, 2) then
-            am = am + 1
-            validUnder[am] = i
-        end
-    end
-end
-
 local options = {
     {
         id = 2,
@@ -141,6 +124,43 @@ local options = {
     }
 }
 
+local userData = {
+    ["loadout_name"] = nil,
+    ["hair"] = -1,
+    ["haircolour"] = -1,
+    ["torso"] = -1,
+    ["torsotexture"] = -1,
+    ["torsoextra"] = -1,
+    ["torsoextratexture"] = -1,
+    ["pants"] = -1,
+    ["pantscolour"] = -1,
+    ["shoes"] = -1,
+    ["shoescolour"] = -1,
+    ["bodyaccessory"] = -1
+}
+
+function initValids()
+    local am = 0
+    for i = 0,GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 3) do
+        if IsPedComponentVariationValid(GetPlayerPed(-1), 3, i, 2) then
+            am = am + 1
+            validTorso[am] = i
+        end
+    end
+    am = 0
+    for i =0, GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 7) do
+        if IsPedComponentVariationValid(GetPlayerPed(-1), 7, i, 2) then
+            am = am + 1
+            validUnder[am] = i
+        end
+    end
+end
+
+-- LOADOUT EVENTS
+RegisterNetEvent("loadout:playerLoadoutChanged")
+AddEventHandler("loadout:playerLoadoutChanged", function(newLoadout)
+    userData["loadout_name"] = newLoadout
+end)
 
 RegisterNetEvent("loadout:changeSkin")
 AddEventHandler("loadout:changeSkin", function(skinName)
@@ -163,12 +183,6 @@ AddEventHandler("loadout:changeSkin", function(skinName)
     end)
 end)
 
-AddEventHandler("playerSpawned", function(spawn)
-    TriggerServerEvent("loadout:playerSpawned", spawn)
-
---    initValids()
-end)
-
 RegisterNetEvent("loadout:giveWeapon")
 AddEventHandler("loadout:giveWeapon", function(name, delayTime)
     if delayTime == nil then
@@ -180,14 +194,6 @@ AddEventHandler("loadout:giveWeapon", function(name, delayTime)
         local hash = GetHashKey(name)
         GiveWeaponToPed(GetPlayerPed(-1), hash, 1000, 0, false)
     end)
-end)
-
-RegisterNetEvent("loadout:missiontext")
-AddEventHandler("loadout:missiontext", function(text, time)
-    ClearPrints()
-    SetTextEntry_2("STRING")
-    AddTextComponentString(text)
-    DrawSubtitleTimed(time, 1)
 end)
 
 RegisterNetEvent("loadout:position")
@@ -225,6 +231,9 @@ AddEventHandler("loadout:makeUnique", function(delay)
         Wait(delay)
 
         for k,v in pairs(options) do
+            local changed = false
+            local changedTo = nil
+
             if (options[k].t == "drawable") then
                 local id = options[k].id
                 local max = options[k].max()
@@ -238,16 +247,22 @@ AddEventHandler("loadout:makeUnique", function(delay)
                         if IsPedComponentVariationValid(GetPlayerPed(-1), id, validTorso[randomNumber], 2) then
                             --Citizen.Trace("The random value is valid :D")
                             SetPedComponentVariation(GetPlayerPed(-1), id,  validTorso[randomNumber], 1, 2)
+
+                            changedTo = validTorso[randomNumber]
                         end
                     elseif (options[k].name == "bodyaccessory") then
                         if IsPedComponentVariationValid(GetPlayerPed(-1), id, validUnder[randomNumber], 2) then
                             --Citizen.Trace("The random value is valid :D")
                             SetPedComponentVariation(GetPlayerPed(-1), id, validUnder[randomNumber], 1, 2)
+
+                            changedTo = validTorso[randomNumber]
                         end
                     else
                         if IsPedComponentVariationValid(GetPlayerPed(-1), id, randomNumber, 2) then
                             --Citizen.Trace("The random value is valid :D")
                             SetPedComponentVariation(GetPlayerPed(-1), id, randomNumber, 1, 2)
+
+                            changedTo = randomNumber
                         end
                     end
                 end
@@ -262,11 +277,151 @@ AddEventHandler("loadout:makeUnique", function(delay)
                     Citizen.Trace("Randomized " .. options[k].name .. " (" .. randomNumber .. "/" .. max ..")")
 
                     SetPedComponentVariation(GetPlayerPed(-1), id, GetPedDrawableVariation(GetPlayerPed(-1), id), randomNumber, 2)
+                    changedTo = randomNumber
                 end
 
             end -- end if options[k].t
 
+            if changedTo ~= nil then
+                userData[options[k].name] = changedTo
+            end
         end -- end for k,v
     end) -- End citizen.CreateThread
+end)
 
+RegisterNetEvent("loadout:saveLoadout")
+AddEventHandler("loadout:saveLoadout", function()
+    TriggerServerEvent("loadout:saveLoadout", userData)
+end)
+
+RegisterNetEvent("loadout:loadVariants")
+AddEventHandler("loadout:loadVariants", function(data, delay)
+    userData = data
+    if delay == nil then
+        delay = 0
+    end
+
+    Citizen.CreateThread(function()
+        Wait(delay)
+        for name, value in pairs(data) do
+            for k, v in pairs(options) do
+                if options[k].name == name then
+                    Citizen.Trace(options[k].name .. " == " .. name)
+					if (options[k].t == "drawable") then
+						local id = options[k].id
+						if (value > 0) then
+							local randomNumber = value
+							Citizen.Trace(options[k].name .. " (" .. randomNumber ..")")
+
+							if (options[k].name == "torso") then
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, validTorso[randomNumber], 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id,  validTorso[randomNumber], 1, 2)
+								end
+							elseif (options[k].name == "bodyaccessory") then
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, validUnder[randomNumber], 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id, validUnder[randomNumber], 1, 2)
+								end
+							else
+								if IsPedComponentVariationValid(GetPlayerPed(-1), id, randomNumber, 2) then
+									SetPedComponentVariation(GetPlayerPed(-1), id, randomNumber, 1, 2)
+								end
+							end
+						end
+					else -- Textures
+						local id = options[k].id
+						if (value > 0) then
+							local randomNumber = data[name]
+							Citizen.Trace(options[k].name .. " (" .. randomNumber ..")")
+							SetPedComponentVariation(GetPlayerPed(-1), id, GetPedDrawableVariation(GetPlayerPed(-1), id), randomNumber, 2)
+						end
+
+					end -- end if options[k].t
+
+				end -- end if name == options[k].name
+            end -- end for k,v
+        end -- end for name, value
+    end) -- End citizen.CreateThread
+end)
+
+-- END LOADOUT EVENTS
+
+-- SPAWN WRAPPER
+AddEventHandler("playerSpawned", function(spawn)
+    TriggerServerEvent("loadout:playerSpawned", spawn)
+end)
+
+-- LANGUAGE EVENTS
+
+RegisterNetEvent("loadout:translateChatMessage")
+AddEventHandler("loadout:translateChatMessage", function(indexString, colour, args)
+    local messageString = LANG[indexString]
+    local pluginName = LANG["name"]
+
+    if (not messageString) or (not pluginName) then
+        Citizen.Trace("Error: No name or message string: " .. indexString)
+        return
+    end
+
+    messageString = string.format(messageString, table.unpack(args))
+
+    TriggerEvent("chatMessage", pluginName, colour, messageString)
+end)
+
+RegisterNetEvent("loadout:chatMessage")
+AddEventHandler("loadout:chatMessage", function(colour, message)
+    local pluginName = LANG["name"]
+
+    if not pluginName then
+        Citizen.Trace("Error: No name for the plugin set: " .. indexString)
+        return
+    end
+
+    TriggerEvent("chatMessage", pluginName, colour, message)
+end)
+
+RegisterNetEvent("loadout:translateSubtitle")
+AddEventHandler("loadout:translateSubtitle", function(indexString, time, args)
+    local translatedString = LANG[indexString]
+    if translatedString == nil then
+        Citizen.Trace("Couldn't translate the string \"" .. indexString .. "\"")
+        return
+    end
+    translatedString = string.format(translatedString, table.unpack(args))
+    TriggerEvent("loadout:subtitleText", translatedString, time)
+end)
+
+RegisterNetEvent("loadout:translateNotif")
+AddEventHandler("loadout:translateNotif", function(indexString, time, args)
+    local translatedString = LANG[indexString]
+    local a = args
+    if not translatedString then
+        Citizen.Trace("Couldn't translate the string \"" .. indexString .. "\"")
+        return
+    end
+    translatedString = string.format(translatedString, table.unpack(a))
+
+    --Citizen.Trace(translatedString)
+    TriggerEvent("loadout:lexiconText", translatedString, time)
+end)
+
+
+
+-- NOTIFICATIONS
+AddEventHandler("loadout:subtitleText", function(text, time)
+    ClearPrints()
+    SetTextEntry_2("STRING")
+    AddTextComponentString(text)
+    DrawSubtitleTimed(time, 1)
+end)
+
+AddEventHandler("loadout:lexiconText", function(text, time)
+    local name = LANG["name"], subject = LANG["notification_subject"]
+    if (not name) or (not subject) then
+        Citizen.Trace("Cannot use lexiconText 'cause the name or subject doesn't exist in the language file: " .. (name) .. ", " .. subject)
+        return
+    end
+    SetNotificationTextEntry("STRING")
+    AddTextComponentString(text)
+    SetNotificationMessage("CHAR_SOCIAL_CLUB", "CHAR_SOCIAL_CLUB", 1, 1, name, subject)
+    DrawNotification(false, false)
 end)

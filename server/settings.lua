@@ -1,6 +1,14 @@
 -- TODO: Add
 SETTINGS = {
+    enable_database = false, -- Set to false if you don't want to save the loadouts to the database
+    database = { -- Database settings (please change)
+        ip = "127.0.0.1", -- IP of the SQL server
+        database = "gta5_gamemode_essential", -- Can use the essentialmode database or, a new one. Up to you :)
+        username = "root",
+        password = ""
+    },
 
+    chat_colour = { 255, 255, 255 } -- RGB Format
 }
 
 -- Edit the table below for more loadouts!
