@@ -139,8 +139,6 @@ local userData = {
     ["bodyaccessory"] = -1
 }
 
-local LANG = {}
-
 function initValids()
     local am = 0
     for i = 0,GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 3) do
@@ -353,25 +351,42 @@ AddEventHandler("playerSpawned", function(spawn)
 end)
 
 -- LANGUAGE EVENTS
-RegisterNetEvent("loadout:loadLanguageFile")
-AddEventHandler("loadout:loadLanguageFile", function(langCode, languageTable)
-    Citizen.Trace("setting language file : " .. type(languageTable))
 
-    LANG = languageTable
+RegisterNetEvent("loadout:translateChatMessage")
+AddEventHandler("loadout:translateChatMessage", function(indexString, colour, args)
+    local messageString = LANG[indexString]
+    local pluginName = LANG["name"]
 
-    Citizen.Trace("loaded language: ".. langCode)
+    if (not messageString) or (not pluginName) then
+        Citizen.Trace("Error: No name or message string: " .. indexString)
+        return
+    end
 
-    TriggerEvent("loadout:translateNotif", "language_file_loaded", 10000, {langCode})
+    messageString = string.format(messageString, table.unpack(args))
+
+    TriggerEvent("chatMessage", pluginName, colour, messageString)
+end)
+
+RegisterNetEvent("loadout:chatMessage")
+AddEventHandler("loadout:chatMessage", function(colour, message)
+    local pluginName = LANG["name"]
+
+    if not pluginName then
+        Citizen.Trace("Error: No name for the plugin set: " .. indexString)
+        return
+    end
+
+    TriggerEvent("chatMessage", pluginName, colour, message)
 end)
 
 RegisterNetEvent("loadout:translateSubtitle")
-AddEventHandler("loadout:translateSubtitle", function(indexString, time)
-    local translatedString = language[indexString]
+AddEventHandler("loadout:translateSubtitle", function(indexString, time, args)
+    local translatedString = LANG[indexString]
     if translatedString == nil then
         Citizen.Trace("Couldn't translate the string \"" .. indexString .. "\"")
         return
     end
-
+    translatedString = string.format(translatedString, table.unpack(args))
     TriggerEvent("loadout:subtitleText", translatedString, time)
 end)
 
@@ -385,7 +400,7 @@ AddEventHandler("loadout:translateNotif", function(indexString, time, args)
     end
     translatedString = string.format(translatedString, table.unpack(a))
 
-    Citizen.Trace(translatedString)
+    --Citizen.Trace(translatedString)
     TriggerEvent("loadout:lexiconText", translatedString, time)
 end)
 
@@ -400,8 +415,13 @@ AddEventHandler("loadout:subtitleText", function(text, time)
 end)
 
 AddEventHandler("loadout:lexiconText", function(text, time)
+    local name = LANG["name"], subject = LANG["notification_subject"]
+    if (not name) or (not subject) then
+        Citizen.Trace("Cannot use lexiconText 'cause the name or subject doesn't exist in the language file: " .. (name) .. ", " .. subject)
+        return
+    end
     SetNotificationTextEntry("STRING")
     AddTextComponentString(text)
-    SetNotificationMessage("CHAR_SOCIAL_CLUB", "CHAR_SOCIAL_CLUB", 1, 1, "Loadouts", "Loadouts loaded")
+    SetNotificationMessage("CHAR_SOCIAL_CLUB", "CHAR_SOCIAL_CLUB", 1, 1, name, subject)
     DrawNotification(false, false)
 end)

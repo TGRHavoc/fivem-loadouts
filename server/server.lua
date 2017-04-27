@@ -1,9 +1,3 @@
-local commands = {}
-
--- Puts all available louadouts into a table, used later on
-for command, _ in pairs(LOADOUTS) do
-    table.insert(commands, command)
-end
 
 if SETTINGS["enable_database"] then
     print("STARTING CONNECTION")
@@ -25,40 +19,6 @@ AddEventHandler("loadout:playerSpawned", function(spawn)
     loadout from the database when they spawn
     ]]
     -- TriggerEvent("loadout:loadFromDatabase", source)
-
-    local defaultLang = SETTINGS["default_lang"]
-
-    if not defaultLang then
-        print("---------------------")
-        print("LOADOUTS: No default language found.. Defaulting to English (gb)!")
-        print("---------------------")
-        defaultLang = "gb"
-    end
-
-    -- Load the player's prefered language?
-    TriggerEvent("loadout:playerRequestLanguageFile", source, defaultLang)
-end)
-
-RegisterServerEvent("loadout:requestLanguageFile")
-AddEventHandler("loadout:requestLanguageFile", function(languageCode)
-    TriggerEvent("loadout:playerRequestLanguageFile", source, languageCode)
-end)
-
-AddEventHandler("loadout:playerRequestLanguageFile", function(id, languageCode)
-
-    local langFile = io.open("resources/" .. GetInvokingResource() .. "/languages/" .. languageCode .. ".json", "r")
-
-    if langFile == nil then
-        print("Error lang: " .. tostring(langFile))
-    else
-        print("Found language file..")
-        local text = langFile:read('*a')
-        local json = json.decode(text)
-        print("sending: " .. tostring(json) .. " to " .. id)
-        TriggerClientEvent("loadout:loadLanguageFile", id, languageCode, json)
-    end
-
-    langFile:close()
 end)
 
 RegisterServerEvent("loadout:saveLoadout")
@@ -94,7 +54,8 @@ AddEventHandler("loadout:saveLoadout", function(d)
                 newData)
         end
 
-        TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+        --TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+        TriggerClientEvent("loadout:translateChatMessage", source, "saved_loadout", SETTINGS[colour], {})
     end)
 end)
 
@@ -114,7 +75,8 @@ AddEventHandler("loadout:loadFromDatabase", function(playerId)
         local result = MySQL:getResults(getCurrentQuery, fields, "identifier")
 
         if result[1] == nil then
-            TriggerClientEvent("chatMessage", playerId, "Loadouts", {255, 255, 255}, "Sorry, you don't have any loadouts saved.")
+            --TriggerClientEvent("chatMessage", playerId, "Loadouts", {255, 255, 255}, "Sorry, you don't have any loadouts saved.")
+            TriggerClientEvent("loadout:translateChatMessage", playerId, "none_saved", SETTINGS["colour"], {})
         else
             --Load them up!
             local r = result[1]
