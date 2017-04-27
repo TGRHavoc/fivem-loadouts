@@ -2,23 +2,6 @@ local validTorso = {}
 local validUnder = {}
 local seedSet = false
 
-function initValids()
-    local am = 0
-    for i = 0,GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 3) do
-        if IsPedComponentVariationValid(GetPlayerPed(-1), 3, i, 2) then
-            am = am + 1
-            validTorso[am] = i
-        end
-    end
-    am = 0
-    for i =0, GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 7) do
-        if IsPedComponentVariationValid(GetPlayerPed(-1), 7, i, 2) then
-            am = am + 1
-            validUnder[am] = i
-        end
-    end
-end
-
 local options = {
     {
         id = 2,
@@ -156,6 +139,26 @@ local userData = {
     ["bodyaccessory"] = -1
 }
 
+local LANG = {}
+
+function initValids()
+    local am = 0
+    for i = 0,GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 3) do
+        if IsPedComponentVariationValid(GetPlayerPed(-1), 3, i, 2) then
+            am = am + 1
+            validTorso[am] = i
+        end
+    end
+    am = 0
+    for i =0, GetNumberOfPedDrawableVariations(GetPlayerPed(-1), 7) do
+        if IsPedComponentVariationValid(GetPlayerPed(-1), 7, i, 2) then
+            am = am + 1
+            validUnder[am] = i
+        end
+    end
+end
+
+-- LOADOUT EVENTS
 RegisterNetEvent("loadout:playerLoadoutChanged")
 AddEventHandler("loadout:playerLoadoutChanged", function(newLoadout)
     userData["loadout_name"] = newLoadout
@@ -182,10 +185,6 @@ AddEventHandler("loadout:changeSkin", function(skinName)
     end)
 end)
 
-AddEventHandler("playerSpawned", function(spawn)
-    TriggerServerEvent("loadout:playerSpawned", spawn)
-end)
-
 RegisterNetEvent("loadout:giveWeapon")
 AddEventHandler("loadout:giveWeapon", function(name, delayTime)
     if delayTime == nil then
@@ -197,14 +196,6 @@ AddEventHandler("loadout:giveWeapon", function(name, delayTime)
         local hash = GetHashKey(name)
         GiveWeaponToPed(GetPlayerPed(-1), hash, 1000, 0, false)
     end)
-end)
-
-RegisterNetEvent("loadout:missiontext")
-AddEventHandler("loadout:missiontext", function(text, time)
-    ClearPrints()
-    SetTextEntry_2("STRING")
-    AddTextComponentString(text)
-    DrawSubtitleTimed(time, 1)
 end)
 
 RegisterNetEvent("loadout:position")
@@ -352,5 +343,65 @@ AddEventHandler("loadout:loadVariants", function(data, delay)
             end -- end for k,v
         end -- end for name, value
     end) -- End citizen.CreateThread
+end)
 
+-- END LOADOUT EVENTS
+
+-- SPAWN WRAPPER
+AddEventHandler("playerSpawned", function(spawn)
+    TriggerServerEvent("loadout:playerSpawned", spawn)
+end)
+
+-- LANGUAGE EVENTS
+RegisterNetEvent("loadout:loadLanguageFile")
+AddEventHandler("loadout:loadLanguageFile", function(langCode, languageTable)
+    Citizen.Trace("setting language file : " .. type(languageTable))
+
+    LANG = languageTable
+
+    Citizen.Trace("loaded language: ".. langCode)
+
+    TriggerEvent("loadout:translateNotif", "language_file_loaded", 10000, {langCode})
+end)
+
+RegisterNetEvent("loadout:translateSubtitle")
+AddEventHandler("loadout:translateSubtitle", function(indexString, time)
+    local translatedString = language[indexString]
+    if translatedString == nil then
+        Citizen.Trace("Couldn't translate the string \"" .. indexString .. "\"")
+        return
+    end
+
+    TriggerEvent("loadout:subtitleText", translatedString, time)
+end)
+
+RegisterNetEvent("loadout:translateNotif")
+AddEventHandler("loadout:translateNotif", function(indexString, time, args)
+    local translatedString = LANG[indexString]
+    local a = args
+    if not translatedString then
+        Citizen.Trace("Couldn't translate the string \"" .. indexString .. "\"")
+        return
+    end
+    translatedString = string.format(translatedString, table.unpack(a))
+
+    Citizen.Trace(translatedString)
+    TriggerEvent("loadout:lexiconText", translatedString, time)
+end)
+
+
+
+-- NOTIFICATIONS
+AddEventHandler("loadout:subtitleText", function(text, time)
+    ClearPrints()
+    SetTextEntry_2("STRING")
+    AddTextComponentString(text)
+    DrawSubtitleTimed(time, 1)
+end)
+
+AddEventHandler("loadout:lexiconText", function(text, time)
+    SetNotificationTextEntry("STRING")
+    AddTextComponentString(text)
+    SetNotificationMessage("CHAR_SOCIAL_CLUB", "CHAR_SOCIAL_CLUB", 1, 1, "Loadouts", "Loadouts loaded")
+    DrawNotification(false, false)
 end)

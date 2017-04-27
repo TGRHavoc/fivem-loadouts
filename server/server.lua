@@ -25,8 +25,41 @@ AddEventHandler("loadout:playerSpawned", function(spawn)
     loadout from the database when they spawn
     ]]
     -- TriggerEvent("loadout:loadFromDatabase", source)
+
+    local defaultLang = SETTINGS["default_lang"]
+
+    if not defaultLang then
+        print("---------------------")
+        print("LOADOUTS: No default language found.. Defaulting to English (gb)!")
+        print("---------------------")
+        defaultLang = "gb"
+    end
+
+    -- Load the player's prefered language?
+    TriggerEvent("loadout:playerRequestLanguageFile", source, defaultLang)
 end)
 
+RegisterServerEvent("loadout:requestLanguageFile")
+AddEventHandler("loadout:requestLanguageFile", function(languageCode)
+    TriggerEvent("loadout:playerRequestLanguageFile", source, languageCode)
+end)
+
+AddEventHandler("loadout:playerRequestLanguageFile", function(id, languageCode)
+
+    local langFile = io.open("resources/" .. GetInvokingResource() .. "/languages/" .. languageCode .. ".json", "r")
+
+    if langFile == nil then
+        print("Error lang: " .. tostring(langFile))
+    else
+        print("Found language file..")
+        local text = langFile:read('*a')
+        local json = json.decode(text)
+        print("sending: " .. tostring(json) .. " to " .. id)
+        TriggerClientEvent("loadout:loadLanguageFile", id, languageCode, json)
+    end
+
+    langFile:close()
+end)
 
 RegisterServerEvent("loadout:saveLoadout")
 AddEventHandler("loadout:saveLoadout", function(d)
