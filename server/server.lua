@@ -1,9 +1,3 @@
-local commands = {}
-
--- Puts all available louadouts into a table, used later on
-for command, _ in pairs(LOADOUTS) do
-    table.insert(commands, command)
-end
 
 if SETTINGS["enable_database"] then
     print("STARTING CONNECTION")
@@ -26,7 +20,6 @@ AddEventHandler("loadout:playerSpawned", function(spawn)
     ]]
     -- TriggerEvent("loadout:loadFromDatabase", source)
 end)
-
 
 RegisterServerEvent("loadout:saveLoadout")
 AddEventHandler("loadout:saveLoadout", function(d)
@@ -61,7 +54,8 @@ AddEventHandler("loadout:saveLoadout", function(d)
                 newData)
         end
 
-        TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+        --TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
+        TriggerClientEvent("loadout:translateChatMessage", source, "saved_loadout", SETTINGS[colour], {})
     end)
 end)
 
@@ -81,7 +75,8 @@ AddEventHandler("loadout:loadFromDatabase", function(playerId)
         local result = MySQL:getResults(getCurrentQuery, fields, "identifier")
 
         if result[1] == nil then
-            TriggerClientEvent("chatMessage", playerId, "Loadouts", {255, 255, 255}, "Sorry, you don't have any loadouts saved.")
+            --TriggerClientEvent("chatMessage", playerId, "Loadouts", {255, 255, 255}, "Sorry, you don't have any loadouts saved.")
+            TriggerClientEvent("loadout:translateChatMessage", playerId, "none_saved", SETTINGS["colour"], {})
         else
             --Load them up!
             local r = result[1]
