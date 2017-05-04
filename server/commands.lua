@@ -5,7 +5,36 @@ for command, _ in pairs(LOADOUTS) do
     table.insert(commands, command)
 end
 
-TriggerEvent("es:addCommand", "loadout", function(source, args, user)
+
+function stringsplit(str, delimiter)
+    local a = str:Split(delimiter)
+    local t = {}
+
+    for i = 0, #a - 1 do
+        table.insert(t, a[i])
+    end
+
+    return t
+end
+
+TriggerEvent("chatMessage", function(source, n, message)
+
+    if  (string.sub(message, 1, string.len(message)) ~= "/") then
+        print("not a command")
+        return
+    end
+
+    local args = stringsplit(message, " ")
+    args[1] = string.gsub(args[1], "/", "")
+
+    if (args[1] ~= "loadouts") then
+        print("not our loadout command")
+        return
+    end
+    
+    -- it's a loadout command..
+    CancelEvent()
+
     if #args > 1 then
         local arg = args[2]
         -- Check the commands first (e.g. help)
