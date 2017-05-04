@@ -1,93 +1,24 @@
 
-if SETTINGS["enable_database"] then
-    print("STARTING CONNECTION")
-    -- Set up MySql connection
-    require "resources/essentialmode/lib/MYSQL"
-    print("Opening connection with " .. SETTINGS["database"].ip)
-    MySQL:open(SETTINGS["database"].ip, SETTINGS["database"].database, SETTINGS["database"].username, SETTINGS["database"].password)
-end
-
-
 -- When the server recieved the playerSpawned event, give the player a loadout
 -- If you don't want this, remove it
 RegisterServerEvent("loadout:playerSpawned")
 AddEventHandler("loadout:playerSpawned", function(spawn)
     TriggerEvent("loadout:doLoadout", source, "random", {})
-
-    --[[
-    Uncomment the line below and remove the line above to load the player's
-    loadout from the database when they spawn
-    ]]
-    -- TriggerEvent("loadout:loadFromDatabase", source)
 end)
 
 RegisterServerEvent("loadout:saveLoadout")
 AddEventHandler("loadout:saveLoadout", function(d)
-    if not SETTINGS["enable_database"] then
-        print("---------------------")
-        print("LOADOUTS: Cannot save. Feature is not enabled on the server!")
-        print("---------------------")
-        return
-    end
-
-    local fields = {"identifier", "loadout_name", "hair", "haircolour", "torso", "torsotexture", "torsoextra", "torsoextratexture", "pants", "pantscolour", "shoes", "shoescolour", "bodyaccessory"}
-    local newData = {}
-
-    for k,v in pairs(d) do
-        newData["@" .. k .. "_data"] = v
-    end
-
-    TriggerEvent("es:getPlayerFromId", source, function(user)
-        newData["@id"] = user.identifier
-
-        local getCurrentQuery = MySQL:executeQuery("SELECT * FROM loadouts WHERE identifier = '@id'", {["@id"] = user.identifier})
-        local result = MySQL:getResults(getCurrentQuery, fields, "identifier")
-
-        if result[1] == nil then
-            -- Insert
-            MySQL:executeQuery("INSERT INTO loadouts (`identifier`, `loadout_name`, `hair`, `haircolour`, `torso`, `torsotexture`, `torsoextra`, `torsoextratexture`, `pants`, `pantscolour`, `shoes`, `shoescolour`, `bodyaccessory`) " ..
-                                "VALUES ('@id', '@loadout_name_data', @hair_data, @haircolour_data, @torso_data, @torsotexture_data, @torsoextra_data, @torsoextratexture_data, @pants_data, @pantscolour_data, @shoes_data, @shoescolour_data, @bodyaccessory_data)",
-                                newData)
-        else
-            -- update
-            MySQL:executeQuery("UPDATE loadouts SET `loadout_name`='@loadout_name_data', `hair`='@hair_data', `haircolour`='@haircolour_data', `torso`='@torso_data', `torsotexture`='@torsotexture_data', `torsoextra`='@torsoextra_data', `torsoextratexture`='@torsoextratexture_data', `pants`='@pants_data', `pantscolour`='@pantscolour_data', `shoes`='@shoes_data', `shoescolour`='@shoescolour_data', `bodyaccessory`='@bodyaccessory_data' WHERE identifier='@id'",
-                newData)
-        end
-
-        --TriggerClientEvent("chatMessage", source, "Loadouts", {255, 255, 255}, "Successfully saved your loadout!")
-        TriggerClientEvent("loadout:translateChatMessage", source, "saved_loadout", SETTINGS[colour], {})
-    end)
+    print("---------------------")
+    print("LOADOUTS: Cannot save. Feature is not yet done!")
+    print("---------------------")
+    return
 end)
 
 AddEventHandler("loadout:loadFromDatabase", function(playerId)
-    if not SETTINGS["enable_database"] then
-        print("---------------------")
-        print("LOADOUTS: Cannot load. Feature is not enabled on the server!")
-        print("---------------------")
-        return
-    end
-
-    local fields = {"identifier", "loadout_name", "hair", "haircolour", "torso", "torsotexture", "torsoextra", "torsoextratexture", "pants", "pantscolour", "shoes", "shoescolour", "bodyaccessory"}
-
-    TriggerEvent("es:getPlayerFromId", playerId, function(user)
-
-        local getCurrentQuery = MySQL:executeQuery("SELECT * FROM loadouts WHERE identifier = '@id'", {["@id"] = user.identifier})
-        local result = MySQL:getResults(getCurrentQuery, fields, "identifier")
-
-        if result[1] == nil then
-            --TriggerClientEvent("chatMessage", playerId, "Loadouts", {255, 255, 255}, "Sorry, you don't have any loadouts saved.")
-            TriggerClientEvent("loadout:translateChatMessage", playerId, "none_saved", SETTINGS["colour"], {})
-        else
-            --Load them up!
-            local r = result[1]
-
-            TriggerEvent("loadout:doLoadout", playerId, r.loadout_name, r) -- Force our variance
-
-            ---TriggerClientEvent("loadout:loadVariants", playerId, r, 1000)
-        end
-
-    end)
-
+    print("---------------------")
+    print("LOADOUTS: Cannot load. Feature is not enabled on the server!")
+    print("---------------------")
+    return
 end)
 
 --[[

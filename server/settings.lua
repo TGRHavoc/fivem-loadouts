@@ -1,13 +1,5 @@
 -- TODO: Add
 SETTINGS = {
-    enable_database = false, -- Set to false if you don't want to save the loadouts to the database
-    database = { -- Database settings (please change)
-        ip = "127.0.0.1", -- IP of the SQL server
-        database = "gta5_gamemode_essential", -- Can use the essentialmode database or, a new one. Up to you :)
-        username = "root",
-        password = ""
-    },
-
     chat_colour = { 255, 255, 255 } -- RGB Format
 }
 
@@ -15,11 +7,12 @@ SETTINGS = {
 LOADOUTS =  {
     ["cop"] = { -- This is the command that is used to get the loadout (i.e. /loadout cop)
         name = "Cop", -- The name of the loadout (shown to the player)
-        permission_level = 2, -- The player must hhave this permission to get the loadout
+        permission_level = 0, -- The player must hhave this permission to get the loadout
         -- Below is a list of weapons the player gets with the loadout (see https://www.se7ensins.com/forums/threads/weapon-and-explosion-hashes-list.1045035/)
         weapons = { "WEAPON_PISTOL50", "WEAPON_STUNGUN", "WEAPON_NIGHTSTICK", "WEAPON_PUMPSHOTGUN", "WEAPON_FLAREGUN" },
         --Below is a list of skins (randomly picked) the player can become with this loadout (see http://www.nextgenupdate.com/forums/gta-5-mods/725735-full-npcs-ped-models-characters-list-case-you-need-p-3.html)
-        skins = { "s_m_y_swat_01" }
+        skins = { "s_m_y_hwaycop_01" },
+        randomize = true,
     },
     ["test"] = {
         name = "Test Loadout",
