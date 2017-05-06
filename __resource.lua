@@ -1,5 +1,3 @@
-dependency "essentialmode"
-
 server_scripts {
     'server/settings.lua',
     'server/server.lua',

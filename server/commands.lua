@@ -16,9 +16,13 @@ function stringsplit(str, delimiter)
     return t
 end
 
-TriggerEvent("chatMessage", function(source, n, message)
+function stringstarts(String,Start)
+   return string.sub(String,1,string.len(Start))==Start
+end
 
-    if  (string.sub(message, 1, string.len(message)) ~= "/") then
+AddEventHandler("chatMessage", function(source, name, message)
+    print("chat message recieved: " .. stringstarts(message, "/"))
+    if (not stringstarts(message, "/")) then
         print("not a command")
         return
     end
@@ -26,13 +30,15 @@ TriggerEvent("chatMessage", function(source, n, message)
     local args = stringsplit(message, " ")
     args[1] = string.gsub(args[1], "/", "")
 
-    if (args[1] ~= "loadouts") then
+    if (args[1] ~= "loadouts") or (args[1] ~= "loadout") then
         print("not our loadout command")
         return
     end
 
     -- it's a loadout command..
     CancelEvent()
+
+    print("loadout command: " .. args[2])
 
     if #args > 1 then
         local arg = args[2]

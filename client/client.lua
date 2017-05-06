@@ -404,8 +404,6 @@ AddEventHandler("loadout:translateNotif", function(indexString, time, args)
     TriggerEvent("loadout:lexiconText", translatedString, time)
 end)
 
-
-
 -- NOTIFICATIONS
 AddEventHandler("loadout:subtitleText", function(text, time)
     ClearPrints()
@@ -415,7 +413,8 @@ AddEventHandler("loadout:subtitleText", function(text, time)
 end)
 
 AddEventHandler("loadout:lexiconText", function(text, time)
-    local name = LANG["name"], subject = LANG["notification_subject"]
+    local name = LANG["name"]
+    local subject = LANG["notification_subject"]
     if (not name) or (not subject) then
         Citizen.Trace("Cannot use lexiconText 'cause the name or subject doesn't exist in the language file: " .. (name) .. ", " .. subject)
         return
